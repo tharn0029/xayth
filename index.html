@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP CPI Authentication Practice Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .auth-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .auth-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border-left: 5px solid #3282b8;
+            transition: all 0.3s ease;
+        }
+
+        .auth-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .auth-card h3 {
+            color: #0f4c75;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .endpoint {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .test-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+        }
+
+        .response-area {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            min-height: 80px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .response-area.success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .response-area.error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        .setup-guide {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .setup-guide h2 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .step {
+            margin: 15px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .step::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #0f4c75;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .setup-guide ol {
+            counter-reset: step-counter;
+        }
+
+        .credentials {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .toggle-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .toggle-header {
+            background: #e9ecef;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle-header:hover {
+            background: #dee2e6;
+        }
+
+        .toggle-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .toggle-content.active {
+            display: block;
+        }
+
+        .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .arrow.rotated {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 SAP CPI Authentication Practice Server</h1>
+            <p>Learn and test different authentication methods with hands-on examples</p>
+        </div>
+
+        <div class="content">
+            <div class="setup-guide">
+                <h2>🚀 Quick Setup Guide</h2>
+                <ol>
+                    <li class="step">This mock server simulates different authentication endpoints</li>
+                    <li class="step">Use the test buttons below to see how each auth method works</li>
+                    <li class="step">Copy the endpoints to configure in your SAP CPI system</li>
+                    <li class="step">Practice with both inbound (to CPI) and outbound (from CPI) scenarios</li>
+                </ol>
+            </div>
+
+            <div class="toggle-section">
+                <div class="toggle-header" onclick="toggleSection('inbound')">
+                    📥 Inbound Authentication (Sender → CPI)
+                    <span class="arrow" id="inbound-arrow">▼</span>
+                </div>
+                <div class="toggle-content" id="inbound-content">
+                    <div class="auth-grid">
+                        <div class="auth-card">
+                            <h3>🔑 Basic Authentication</h3>
+                            <p>Test with username/password credentials</p>
+                            <div class="endpoint">POST /api/basic-auth</div>
+                            <div class="credentials">
+                                <strong>Test Credentials:</strong><br>
+                                Username: <code>cpi_user</code><br>
+                                Password: <code>Test123!</code>
+                            </div>
+                            <button class="test-btn" onclick="testBasicAuth()">Test Basic Auth</button>
+                            <div class="response-area" id="basic-response"></div>
+                        </div>
+
+                        <div class="auth-card">
+                            <h3>📜 Client Certificate</h3>
+                            <p>Mutual TLS authentication simulation</p>
+                            <div class="endpoint">POST /api/cert-auth</div>
+                            <div class="credentials">
+                                <strong>Certificate Info:</strong><br>
+                                CN: client.cpi.test<br>
+                                Issuer: CPI-CA
+                            </div>
+                            <button class="test-btn" onclick="testCertAuth()">Simulate Cert Auth</button>
+                            <div class="response-area" id="cert-response"></div>
+                        </div>
+
+                        <div class="auth-card">
+                            <h3>🎫 OAuth 2.0 Client Credentials</h3>
+                            <p>Token-based authentication</p>
+                            <div class="endpoint">POST /api/oauth-client</div>
+                            <div class="credentials">
+                                <strong>OAuth Config:</strong><br>
+                                Client ID: <code>cpi_client_123</code><br>
+                                Client Secret: <code>secret456</code><br>
+                                Token URL: <code>/token</code>
+                            </div>
+                            <button class="test-btn" onclick="testOAuthClient()">Test OAuth Client</button>
+                            <div class="response-area" id="oauth-response"></div>
+                        </div>
+
+                        <div class="auth-card">
+                            <h3>🏷️ JWT Bearer</h3>
+                            <p>JSON Web Token authentication</p>
+                            <div class="endpoint">POST /api/jwt-bearer</div>
+                            <div class="credentials">
+                                <strong>JWT Config:</strong><br>
+                                Issuer: <code>cpi.system</code><br>
+                                Subject: <code>integration_user</code><br>
+                                Algorithm: RS256
+                            </div>
+                            <button class="test-btn" onclick="testJWTBearer()">Test JWT Bearer</button>
+                            <div class="response-area" id="jwt-response"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toggle-section">
+                <div class="toggle-header" onclick="toggleSection('outbound')">
+                    📤 Outbound Authentication (CPI → Receiver)
+                    <span class="arrow" id="outbound-arrow">▼</span>
+                </div>
+                <div class="toggle-content" id="outbound-content">
+                    <div class="auth-grid">
+                        <div class="auth-card">
+                            <h3>🌐 REST API with Basic Auth</h3>
+                            <p>Simulate calling external REST service</p>
+                            <div class="endpoint">GET /api/external/basic</div>
+                            <div class="credentials">
+                                <strong>External System:</strong><br>
+                                Username: <code>ext_user</code><br>
+                                Password: <code>ExtPass789</code>
+                            </div>
+                            <button class="test-btn" onclick="testExternalBasic()">Call External API</button>
+                            <div class="response-area" id="ext-basic-response"></div>
+                        </div>
+
+                        <div class="auth-card">
+                            <h3>☁️ OAuth 2.0 to Cloud Service</h3>
+                            <p>Simulate OAuth flow to cloud provider</p>
+                            <div class="endpoint">GET /api/cloud/oauth</div>
+                            <div class="credentials">
+                                <strong>Cloud Config:</strong><br>
+                                Provider: Azure/AWS/GCP<br>
+                                Scope: <code>api.read api.write</code><br>
+                                Grant Type: client_credentials
+                            </div>
+                            <button class="test-btn" onclick="testCloudOAuth()">Connect to Cloud</button>
+                            <div class="response-area" id="cloud-oauth-response"></div>
+                        </div>
+
+                        <div class="auth-card">
+                            <h3>🔐 SAML Bearer Assertion</h3>
+                            <p>Enterprise SSO integration</p>
+                            <div class="endpoint">POST /api/saml/bearer</div>
+                            <div class="credentials">
+                                <strong>SAML Config:</strong><br>
+                                Entity ID: <code>cpi.company.com</code><br>
+                                Assertion Consumer: <code>/acs</code><br>
+                                IdP: Company ADFS
+                            </div>
+                            <button class="test-btn" onclick="testSAMLBearer()">Test SAML Flow</button>
+                            <div class="response-area" id="saml-response"></div>
+                        </div>
+
+                        <div class="auth-card">
+                            <h3>🚫 No Authentication</h3>
+                            <p>Open endpoint for testing</p>
+                            <div class="endpoint">GET /api/public/test</div>
+                            <div class="credentials">
+                                <strong>Use Case:</strong><br>
+                                Development testing<br>
+                                Public webhooks<br>
+                                Health checks
+                            </div>
+                            <button class="test-btn" onclick="testNoAuth()">Test Open Endpoint</button>
+                            <div class="response-area" id="noauth-response"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toggle-section">
+                <div class="toggle-header" onclick="toggleSection('practice')">
+                    🎯 Practice Scenarios
+                    <span class="arrow" id="practice-arrow">▼</span>
+                </div>
+                <div class="toggle-content" id="practice-content">
+                    <div class="setup-guide">
+                        <h2>💡 How to Practice with Real CPI</h2>
+                        <ol>
+                            <li class="step"><strong>Setup Local Test Server:</strong> Use tools like Postman Mock Server, Node.js/Express, or Spring Boot to create endpoints with different auth methods</li>
+                            <li class="step"><strong>Configure CPI Integration Flows:</strong> Create simple flows that call your test endpoints using different authentication methods</li>
+                            <li class="step"><strong>Test Inbound Scenarios:</strong> Create HTTP adapters in CPI and call them from external tools like Postman or curl</li>
+                            <li class="step"><strong>Monitor and Debug:</strong> Use CPI monitoring to see authentication success/failure and understand error messages</li>
+                            <li class="step"><strong>Document Your Learnings:</strong> Keep notes on configuration steps, common errors, and troubleshooting tips</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId + '-content');
+            const arrow = document.getElementById(sectionId + '-arrow');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                arrow.classList.remove('rotated');
+            } else {
+                content.classList.add('active');
+                arrow.classList.add('rotated');
+            }
+        }
+
+        function showResponse(elementId, message, isSuccess = true) {
+            const responseDiv = document.getElementById(elementId);
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'response-area ' + (isSuccess ? 'success' : 'error');
+            responseDiv.innerHTML = message;
+        }
+
+        function testBasicAuth() {
+            const timestamp = new Date().toISOString();
+            showResponse('basic-response', 
+                `✅ Authentication Successful\n\n` +
+                `Request: POST /api/basic-auth\n` +
+                `Authorization: Basic Y3BpX3VzZXI6VGVzdDEyMyE=\n` +
+                `Response: 200 OK\n` +
+                `Body: {"status":"authenticated","user":"cpi_user","timestamp":"${timestamp}"}`, 
+                true);
+        }
+
+        function testCertAuth() {
+            const timestamp = new Date().toISOString();
+            showResponse('cert-response', 
+                `🔒 Certificate Authentication Successful\n\n` +
+                `Request: POST /api/cert-auth\n` +
+                `Client-Cert: CN=client.cpi.test,OU=IT,O=Company\n` +
+                `Response: 200 OK\n` +
+                `Body: {"status":"cert_authenticated","cn":"client.cpi.test","timestamp":"${timestamp}"}`, 
+                true);
+        }
+
+        function testOAuthClient() {
+            const timestamp = new Date().toISOString();
+            showResponse('oauth-response', 
+                `🎫 OAuth Token Generated\n\n` +
+                `Step 1: POST /token\n` +
+                `grant_type=client_credentials&client_id=cpi_client_123&client_secret=secret456\n\n` +
+                `Step 2: POST /api/oauth-client\n` +
+                `Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...\n` +
+                `Response: 200 OK\n` +
+                `Body: {"status":"token_valid","expires_in":3600,"timestamp":"${timestamp}"}`, 
+                true);
+        }
+
+        function testJWTBearer() {
+            const timestamp = new Date().toISOString();
+            showResponse('jwt-response', 
+                `🏷️ JWT Token Validated\n\n` +
+                `Request: POST /api/jwt-bearer\n` +
+                `Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJjcGkuc3lzdGVtIiwic3ViIjoiaW50ZWdyYXRpb25fdXNlciIsImF1ZCI6ImFwaS5zZXJ2aWNlIiwiaWF0IjoxNjk5OTc1MjAwLCJleHAiOjE2OTk5Nzg4MDB9...\n` +
+                `Response: 200 OK\n` +
+                `Body: {"status":"jwt_valid","subject":"integration_user","issuer":"cpi.system","timestamp":"${timestamp}"}`, 
+                true);
+        }
+
+        function testExternalBasic() {
+            const timestamp = new Date().toISOString();
+            showResponse('ext-basic-response', 
+                `🌐 External API Call Successful\n\n` +
+                `CPI → External System\n` +
+                `Request: GET /api/external/basic\n` +
+                `Authorization: Basic ZXh0X3VzZXI6RXh0UGFzczc4OQ==\n` +
+                `Response: 200 OK\n` +
+                `Body: {"data":"Customer records retrieved","count":150,"timestamp":"${timestamp}"}`, 
+                true);
+        }
+
+        function testCloudOAuth() {
+            const timestamp = new Date().toISOString();
+            showResponse('cloud-oauth-response', 
+                `☁️ Cloud Service Connected\n\n` +
+                `OAuth Flow:\n` +
+                `1. POST /oauth/token (client_credentials)\n` +
+                `2. GET /api/cloud/oauth\n` +
+                `   Authorization: Bearer ya29.a0AfH6SMB...\n` +
+                `Response: 200 OK\n` +
+                `Body: {"service":"Azure/AWS/GCP","status":"connected","data_retrieved":true,"timestamp":"${timestamp}"}`, 
+                true);
+        }
+
+        function testSAMLBearer() {
+            const timestamp = new Date().toISOString();
+            showResponse('saml-response', 
+                `🔐 SAML Assertion Validated\n\n` +
+                `SAML Flow:\n` +
+                `1. CPI signs SAML assertion\n` +
+                `2. POST /api/saml/bearer\n` +
+                `3. SAML assertion verified by IdP\n` +
+                `Response: 200 OK\n` +
+                `Body: {"saml_status":"validated","entity_id":"cpi.company.com","user":"john.doe@company.com","timestamp":"${timestamp}"}`, 
+                true);
+        }
+
+        function testNoAuth() {
+            const timestamp = new Date().toISOString();
+            showResponse('noauth-response', 
+                `🚫 Open Endpoint Access\n\n` +
+                `Request: GET /api/public/test\n` +
+                `Authorization: None\n` +
+                `Response: 200 OK\n` +
+                `Body: {"status":"public_access","message":"No authentication required","timestamp":"${timestamp}"}`, 
+                true);
+        }
+
+        // Initialize with first section open
+        document.getElementById('inbound-content').classList.add('active');
+        document.getElementById('inbound-arrow').classList.add('rotated');
+    </script>
+</body>
+</html>
