@@ -1,0 +1,24 @@
+{
+  "name": "cpi-auth-practice-server",
+  "version": "1.0.0",
+  "description": "SAP CPI Authentication Practice Server with real endpoints",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "keywords": ["sap", "cpi", "authentication", "practice", "integration"],
+  "author": "CPI Learning",
+  "license": "MIT"
+}
